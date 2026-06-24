@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  enemy_bat.svg — Original placeholder sprite
+  License: Public Domain (CC0)
+  Author: Generated for vampire-survival-assets prototype
+  Description: Simple bat enemy, 24x24
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <!-- Body -->
+  <ellipse cx="12" cy="14" rx="4" ry="5" fill="#2a2a3a"/>
+  <!-- Ears -->
+  <polygon points="9,10 7,4 11,9" fill="#2a2a3a"/>
+  <polygon points="15,10 17,4 13,9" fill="#2a2a3a"/>
+  <!-- Inner ears -->
+  <polygon points="9.5,9.5 8,5.5 10.5,9" fill="#5a3a4a"/>
+  <polygon points="14.5,9.5 16,5.5 13.5,9" fill="#5a3a4a"/>
+  <!-- Eyes -->
+  <circle cx="10" cy="13" r="1.5" fill="#ff3333"/>
+  <circle cx="14" cy="13" r="1.5" fill="#ff3333"/>
+  <circle cx="10" cy="13" r="0.75" fill="#1a1a1a"/>
+  <circle cx="14" cy="13" r="0.75" fill="#1a1a1a"/>
+  <!-- Mouth -->
+  <path d="M10,16 Q12,18 14,16" fill="none" stroke="#1a1a1a" stroke-width="0.75"/>
+  <!-- Wings -->
+  <path d="M8,12 Q2,6 0,10 Q4,14 8,14" fill="#1a1a2a"/>
+  <path d="M16,12 Q22,6 24,10 Q20,14 16,14" fill="#1a1a2a"/>
+</svg>

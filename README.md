@@ -23,7 +23,18 @@ python3 -m http.server 8000
 ```
 ├── index.html              # Entry point
 ├── styles.css              # Gothic desktop layout
-├── assets/                  # Placeholder assets
+├── assets/                  # Sprite assets (SVG)
+│   ├── manifest.json       # Asset manifest (logical name → path)
+│   ├── player_hunter.svg   # Player sprite
+│   ├── enemy_bat.svg       # Bat enemy
+│   ├── enemy_skeleton.svg  # Skeleton enemy
+│   ├── enemy_slime.svg     # Slime enemy
+│   ├── xp_gem.svg          # XP collectible
+│   ├── weapon_magic_bolt.svg  # Magic bolt projectile
+│   ├── weapon_knife.svg    # Knife projectile
+│   ├── tile_graveyard_floor.svg  # Floor tile
+│   ├── prop_tombstone.svg  # Tombstone prop
+│   └── placeholder.png     # Build placeholder
 ├── IMPLEMENTATION_PLAN.md  # Phased development plan
 └── ASSETS.md               # Asset manifest & licensing
 ```
