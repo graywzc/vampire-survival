@@ -90,7 +90,6 @@ This document outlines the phased implementation plan for a quick-playable vanil
 - [ ] Game over overlay with final stats and restart
 - [ ] Level-up choice overlay with timer (5s to pick)
 - [ ] Smooth HUD animations (bar fills, number transitions)
-- [ ] Sound effects: XP pickup, level up, enemy death, weapon fire
 
 ## Phase 6 — World & Polish
 
