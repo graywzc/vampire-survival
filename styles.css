@@ -1,0 +1,430 @@
+/* ========================================
+   Vampire Survivors Prototype — Styles
+   Gothic Desktop Layout
+   ======================================== */
+
+/* --- Reset & Base --- */
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --color-bg: #0a0a0f;
+  --color-panel: rgba(15, 10, 25, 0.92);
+  --color-border: #3d2b5a;
+  --color-accent: #8b5cf6;
+  --color-accent-glow: rgba(139, 92, 246, 0.4);
+  --color-health: #ef4444;
+  --color-health-bg: #451a1a;
+  --color-xp: #22d3ee;
+  --color-xp-bg: #0c2a3a;
+  --color-gold: #f59e0b;
+  --color-text: #e2d9f3;
+  --color-text-dim: #9488a8;
+  --color-danger: #dc2626;
+  --color-success: #22c55e;
+  --font-main: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --shadow-glow: 0 0 20px var(--color-accent-glow);
+  --transition-fast: 0.15s ease;
+  --transition-med: 0.3s ease;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-main);
+  user-select: none;
+}
+
+/* --- App Container --- */
+
+#app {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(139, 92, 246, 0.06) 0%, transparent 70%),
+    var(--color-bg);
+}
+
+/* --- Game Canvas --- */
+
+#game {
+  display: block;
+  width: 1280px;
+  height: 720px;
+  max-width: 100vw;
+  max-height: calc(100vh - 50px); /* leave room for controls */
+  background: #111118;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-glow), 0 0 60px rgba(0, 0, 0, 0.6);
+  image-rendering: pixelated;
+}
+
+/* --- HUD --- */
+
+#hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  pointer-events: none;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 10;
+}
+
+#hud-top {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+}
+
+.hud-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-panel);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 4px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  backdrop-filter: blur(4px);
+}
+
+.hud-icon {
+  font-size: 16px;
+}
+
+#hud-time {
+  font-variant-numeric: tabular-nums;
+  color: var(--color-gold);
+}
+
+#hud-level-val {
+  color: var(--color-accent);
+}
+
+#hud-kills-val {
+  color: var(--color-danger);
+}
+
+/* --- Bars --- */
+
+#hud-bars {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.bar-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-panel);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 4px 12px;
+  min-width: 200px;
+  backdrop-filter: blur(4px);
+}
+
+.bar-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-dim);
+  width: 24px;
+}
+
+.bar-track {
+  flex: 1;
+  height: 14px;
+  background: var(--color-health-bg);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.bar-track .bar-xp {
+  background: var(--color-xp-bg);
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: var(--radius-sm);
+  transition: width var(--transition-med);
+}
+
+.bar-health {
+  background: linear-gradient(90deg, var(--color-health), #f87171);
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+}
+
+.bar-xp {
+  background: linear-gradient(90deg, var(--color-xp), #67e8f9);
+  box-shadow: 0 0 8px rgba(34, 211, 238, 0.5);
+}
+
+.bar-value {
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  min-width: 32px;
+  text-align: right;
+}
+
+/* --- Weapons HUD --- */
+
+#hud-weapons {
+  position: absolute;
+  bottom: 12px;
+  left: 16px;
+}
+
+#hud-weapons-list {
+  display: flex;
+  gap: 4px;
+}
+
+.weapon-slot {
+  width: 32px;
+  height: 32px;
+  background: var(--color-panel);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+/* --- Controls Bar --- */
+
+#controls-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px;
+  z-index: 10;
+}
+
+.ctrl-btn {
+  background: var(--color-panel);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  backdrop-filter: blur(4px);
+}
+
+.ctrl-btn:hover {
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-1px);
+}
+
+.ctrl-btn:active {
+  transform: translateY(0);
+}
+
+/* --- Overlays --- */
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(5, 2, 12, 0.85);
+  backdrop-filter: blur(6px);
+  z-index: 100;
+  transition: opacity var(--transition-med);
+}
+
+.overlay.hidden {
+  display: none;
+}
+
+.overlay-content {
+  background: var(--color-panel);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 40px 48px;
+  text-align: center;
+  max-width: 520px;
+  width: 90%;
+  box-shadow: var(--shadow-glow), 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.overlay-content h1 {
+  font-family: var(--font-display);
+  font-size: 32px;
+  color: var(--color-accent);
+  margin-bottom: 8px;
+  text-shadow: 0 0 20px var(--color-accent-glow);
+}
+
+.overlay-content h2 {
+  font-family: var(--font-display);
+  font-size: 28px;
+  color: var(--color-accent);
+  margin-bottom: 8px;
+  text-shadow: 0 0 15px var(--color-accent-glow);
+}
+
+.overlay-subtitle {
+  color: var(--color-text-dim);
+  font-size: 15px;
+  margin-bottom: 20px;
+}
+
+.overlay-controls {
+  color: var(--color-text-dim);
+  font-size: 13px;
+  margin-bottom: 24px;
+}
+
+/* --- Buttons --- */
+
+.overlay-btn {
+  display: inline-block;
+  background: linear-gradient(135deg, var(--color-accent), #7c3aed);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 12px 32px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  margin: 4px;
+}
+
+.overlay-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px var(--color-accent-glow);
+}
+
+.overlay-btn:active {
+  transform: translateY(0);
+}
+
+.overlay-btn.primary {
+  font-size: 20px;
+  padding: 16px 48px;
+  letter-spacing: 0.05em;
+}
+
+.overlay-btn.secondary {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-dim);
+}
+
+.overlay-btn.secondary:hover {
+  border-color: var(--color-text);
+  color: var(--color-text);
+  box-shadow: none;
+}
+
+/* --- Level Up Choices --- */
+
+.choice-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.choice-card {
+  background: rgba(30, 20, 50, 0.8);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: left;
+}
+
+.choice-card:hover {
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-glow);
+  transform: translateX(4px);
+}
+
+.choice-card h3 {
+  font-size: 16px;
+  color: var(--color-gold);
+  margin-bottom: 4px;
+}
+
+.choice-card p {
+  font-size: 13px;
+  color: var(--color-text-dim);
+}
+
+.overlay-timer {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-gold);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Game Over Stats --- */
+
+#gameover-stats {
+  margin: 20px 0;
+  text-align: left;
+  display: inline-block;
+}
+
+#gameover-stats p {
+  font-size: 15px;
+  margin: 6px 0;
+  color: var(--color-text-dim);
+}
+
+#gameover-stats strong {
+  color: var(--color-text);
+}
+
+/* --- Scrollbar (for any overflow) --- */
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vampire Survivors Prototype</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Game Canvas -->
+    <canvas id="game" width="1280" height="720"></canvas>
+
+    <!-- HUD Overlay -->
+    <div id="hud">
+      <div id="hud-top">
+        <div id="hud-timer" class="hud-item">
+          <span class="hud-icon">⏱</span>
+          <span id="hud-time">00:00</span>
+        </div>
+        <div id="hud-level" class="hud-item">
+          <span class="hud-icon">⭐</span>
+          <span id="hud-level-val">1</span>
+        </div>
+        <div id="hud-kills" class="hud-item">
+          <span class="hud-icon">💀</span>
+          <span id="hud-kills-val">0</span>
+        </div>
+      </div>
+
+      <div id="hud-bars">
+        <!-- Health Bar -->
+        <div class="bar-container">
+          <span class="bar-label">HP</span>
+          <div class="bar-track">
+            <div id="hud-health-bar" class="bar-fill bar-health" style="width: 100%"></div>
+          </div>
+          <span id="hud-health-val" class="bar-value">100</span>
+        </div>
+
+        <!-- XP Bar -->
+        <div class="bar-container">
+          <span class="bar-label">XP</span>
+          <div class="bar-track">
+            <div id="hud-xp-bar" class="bar-fill bar-xp" style="width: 0%"></div>
+          </div>
+          <span id="hud-xp-val" class="bar-value">0</span>
+        </div>
+      </div>
+
+      <!-- Weapons Display -->
+      <div id="hud-weapons" class="hud-item">
+        <span class="hud-icon">🗡</span>
+        <div id="hud-weapons-list"></div>
+      </div>
+    </div>
+
+    <!-- Controls Bar -->
+    <div id="controls-bar">
+      <button id="btn-start" class="ctrl-btn" title="Start Game">▶ Start</button>
+      <button id="btn-pause" class="ctrl-btn" title="Pause Game">⏸ Pause</button>
+      <button id="btn-restart" class="ctrl-btn" title="Restart Game">↻ Restart</button>
+    </div>
+
+    <!-- Pause Overlay -->
+    <div id="overlay-pause" class="overlay hidden">
+      <div class="overlay-content">
+        <h2>⏸ Game Paused</h2>
+        <button id="btn-resume" class="overlay-btn">▶ Resume</button>
+        <button id="btn-quit" class="overlay-btn secondary">✕ Quit to Menu</button>
+      </div>
+    </div>
+
+    <!-- Level Up Overlay -->
+    <div id="overlay-levelup" class="overlay hidden">
+      <div class="overlay-content">
+        <h2>⭐ Level Up!</h2>
+        <p class="overlay-subtitle">Choose an upgrade</p>
+        <div id="levelup-choices" class="choice-grid">
+          <!-- Populated dynamically -->
+        </div>
+        <p id="levelup-timer" class="overlay-timer">5.0s</p>
+      </div>
+    </div>
+
+    <!-- Game Over Overlay -->
+    <div id="overlay-gameover" class="overlay hidden">
+      <div class="overlay-content">
+        <h2>☠ Game Over</h2>
+        <div id="gameover-stats">
+          <p>Time Survived: <strong id="go-time">00:00</strong></p>
+          <p>Level Reached: <strong id="go-level">1</strong></p>
+          <p>Enemies Slain: <strong id="go-kills">0</strong></p>
+        </div>
+        <button id="btn-retry" class="overlay-btn">↻ Play Again</button>
+      </div>
+    </div>
+
+    <!-- Start Screen Overlay -->
+    <div id="overlay-start" class="overlay">
+      <div class="overlay-content">
+        <h1>🧛 Vampire Survivors Prototype</h1>
+        <p class="overlay-subtitle">Survive the horde. Collect XP. Grow stronger.</p>
+        <p class="overlay-controls">
+          <strong>Controls:</strong> WASD / Arrow Keys to move
+        </p>
+        <button id="btn-play" class="overlay-btn primary">▶ Play</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
