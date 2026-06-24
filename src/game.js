@@ -27,25 +27,27 @@ const MAX_GEMS    = 500;
 // ── Player ────────────────────────────────────────────────────────
 const P = {
   x: 0, y: 0, radius: 12, speed: 180,
-  hp: 100, maxHp: 100, level: 1,
-  xp: 0, xpToNext: 20, kills: 0,
+  hp: 150, maxHp: 150, level: 1,
+  xp: 0, xpToNext: 12, kills: 0,
   invTimer: 0,
   damage: 10,
   wCd: 0, wRate: 0.8,
   boltCd: 0, boltRate: 1.2,
   projSpeed: 400,
   orbitCount: 1, orbitRadius: 60, orbitAngle: 0,
+  pickupRadius: 100,
 };
 
 function resetPlayer() {
   P.x = 0; P.y = 0; P.speed = 180;
-  P.hp = 100; P.maxHp = 100; P.level = 1;
-  P.xp = 0; P.xpToNext = 20; P.kills = 0;
+  P.hp = 150; P.maxHp = 150; P.level = 1;
+  P.xp = 0; P.xpToNext = 12; P.kills = 0;
   P.invTimer = 0; P.damage = 10;
   P.wCd = 0; P.wRate = 0.8;
   P.boltCd = 0; P.boltRate = 1.2;
   P.projSpeed = 400;
   P.orbitCount = 1; P.orbitRadius = 60; P.orbitAngle = 0;
+  P.pickupRadius = 100;
 }
 
 // ── Enemies ───────────────────────────────────────────────────────
@@ -53,18 +55,18 @@ let enemies = [];
 let spawnTimer = 0;
 
 const ETYPES = {
-  basic: { r: 10, spd: 60, hp: 20, dmg: 8, color: '#ef4444', xp: 3 },
-  fast:  { r: 8,  spd: 110, hp: 10, dmg: 5, color: '#f97316', xp: 2 },
-  tank:  { r: 16, spd: 35, hp: 60, dmg: 15, color: '#a855f7', xp: 6 },
-  reaper:{ r: 14, spd: 80, hp: 100, dmg: 20, color: '#000000', xp: 10 },
+  basic: { r: 10, spd: 50, hp: 15, dmg: 5, color: '#ef4444', xp: 4 },
+  fast:  { r: 8,  spd: 90, hp: 10, dmg: 4, color: '#f97316', xp: 3 },
+  tank:  { r: 16, spd: 30, hp: 50, dmg: 10, color: '#a855f7', xp: 8 },
+  reaper:{ r: 14, spd: 70, hp: 80, dmg: 15, color: '#000000', xp: 10 },
 };
 
 function spawnEnemy() {
   const angle = Math.random() * Math.PI * 2;
-  const dist = 600 + Math.random() * 200;
+  const dist = 800 + Math.random() * 200;
   let type = 'basic';
-  if (gameTime > 60 && Math.random() < 0.3) type = 'fast';
-  if (gameTime > 120 && Math.random() < 0.15) type = 'tank';
+  if (gameTime > 90 && Math.random() < 0.25) type = 'fast';
+  if (gameTime > 150 && Math.random() < 0.12) type = 'tank';
   // Reaper spawns during pressure phase
   if (gameTime >= WIN_TIME && Math.random() < 0.25) type = 'reaper';
   const t = ETYPES[type];
@@ -105,12 +107,14 @@ const UPGRADES = [
     apply: () => { P.damage += 5; } },
   { id: 'speed', name: 'Speed Up', desc: 'Move 15% faster',
     apply: () => { P.speed *= 1.15; } },
-  { id: 'firerate', name: 'Fire Rate', desc: 'Shoot 20% faster',
-    apply: () => { P.wRate *= 0.8; } },
-  { id: 'health', name: 'Heal', desc: 'Restore 30 HP',
-    apply: () => { P.hp = Math.min(P.hp + 30, P.maxHp); } },
-  { id: 'maxhealth', name: 'Max HP Up', desc: 'Increase max HP by 20',
-    apply: () => { P.maxHp += 20; P.hp += 20; } },
+  { id: 'firerate', name: 'Fire Rate', desc: 'Reduce all cooldowns by 15%',
+    apply: () => { P.wRate *= 0.85; P.boltRate *= 0.85; } },
+  { id: 'health', name: 'Heal', desc: 'Restore 40 HP',
+    apply: () => { P.hp = Math.min(P.hp + 40, P.maxHp); } },
+  { id: 'maxhealth', name: 'Max HP Up', desc: 'Increase max HP by 25 and heal 25',
+    apply: () => { P.maxHp += 25; P.hp += 25; } },
+  { id: 'pickupradius', name: 'Pickup Radius', desc: 'Increase gem magnet range by 30',
+    apply: () => { P.pickupRadius += 30; } },
   { id: 'orbitcount', name: 'Extra Orbit', desc: 'Add an orbiting projectile',
     apply: () => { P.orbitCount += 1; } },
   { id: 'projspeed', name: 'Projectile Speed', desc: 'Projectiles fly 20% faster',
@@ -471,7 +475,7 @@ function gameLoop(timestamp) {
     if (dist < overlapDist) {
       if (P.invTimer <= 0) {
         P.hp -= e.dmg;
-        P.invTimer = 0.5;
+        P.invTimer = 0.75;
       }
       continue;
     }
@@ -527,7 +531,7 @@ function gameLoop(timestamp) {
       gems.splice(i, 1);
       continue;
     }
-    if (dist < 100 && dist > 0.1) {
+    if (dist < P.pickupRadius && dist > 0.1) {
       g.x += (ddx / dist) * 300 * dt;
       g.y += (ddy / dist) * 300 * dt;
     }
