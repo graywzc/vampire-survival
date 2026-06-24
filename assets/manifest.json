@@ -1,0 +1,97 @@
+{
+  "version": "1.0.0",
+  "description": "Prototype asset manifest for Vampire Survivors-style browser game",
+  "license_note": "All assets are original creations released under CC0 (Public Domain) unless otherwise noted",
+  "assets": {
+    "player_hunter": {
+      "path": "assets/player_hunter.svg",
+      "type": "sprite",
+      "category": "player",
+      "dimensions": "32x32",
+      "format": "svg",
+      "license": "CC0",
+      "description": "Hunter character facing forward"
+    },
+    "enemy_bat": {
+      "path": "assets/enemy_bat.svg",
+      "type": "sprite",
+      "category": "enemy",
+      "dimensions": "24x24",
+      "format": "svg",
+      "license": "CC0",
+      "description": "Basic bat enemy with spread wings"
+    },
+    "enemy_skeleton": {
+      "path": "assets/enemy_skeleton.svg",
+      "type": "sprite",
+      "category": "enemy",
+      "dimensions": "28x32",
+      "format": "svg",
+      "license": "CC0",
+      "description": "Skeleton walker enemy"
+    },
+    "enemy_slime": {
+      "path": "assets/enemy_slime.svg",
+      "type": "sprite",
+      "category": "enemy",
+      "dimensions": "24x24",
+      "format": "svg",
+      "license": "CC0",
+      "description": "Green slime blob enemy"
+    },
+    "xp_gem": {
+      "path": "assets/xp_gem.svg",
+      "type": "sprite",
+      "category": "collectible",
+      "dimensions": "16x16",
+      "format": "svg",
+      "license": "CC0",
+      "description": "Blue XP gem drop"
+    },
+    "weapon_magic_bolt": {
+      "path": "assets/weapon_magic_bolt.svg",
+      "type": "sprite",
+      "category": "weapon",
+      "dimensions": "20x12",
+      "format": "svg",
+      "license": "CC0",
+      "description": "Magic bolt projectile"
+    },
+    "weapon_knife": {
+      "path": "assets/weapon_knife.svg",
+      "type": "sprite",
+      "category": "weapon",
+      "dimensions": "28x10",
+      "format": "svg",
+      "license": "CC0",
+      "description": "Throwing knife projectile"
+    },
+    "tile_graveyard_floor": {
+      "path": "assets/tile_graveyard_floor.svg",
+      "type": "tile",
+      "category": "world",
+      "dimensions": "64x64",
+      "format": "svg",
+      "license": "CC0",
+      "description": "Grass tile with texture, tileable"
+    },
+    "prop_tombstone": {
+      "path": "assets/prop_tombstone.svg",
+      "type": "prop",
+      "category": "world",
+      "dimensions": "28x36",
+      "format": "svg",
+      "license": "CC0",
+      "description": "Gravestone with cross carving"
+    },
+    "placeholder": {
+      "path": "assets/placeholder.png",
+      "type": "image",
+      "category": "misc",
+      "dimensions": "1x1",
+      "format": "png",
+      "license": "Public Domain",
+      "description": "1x1 transparent PNG build placeholder"
+    }
+  }
+}

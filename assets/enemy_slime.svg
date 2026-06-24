@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  enemy_slime.svg — Original placeholder sprite
+  License: Public Domain (CC0)
+  Author: Generated for vampire-survival-assets prototype
+  Description: Simple slime enemy, 24x24
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <!-- Shadow -->
+  <ellipse cx="12" cy="22" rx="9" ry="2" fill="rgba(0,0,0,0.2)"/>
+  <!-- Body -->
+  <path d="M4,18 Q4,6 12,4 Q20,6 20,18 Q18,20 12,20 Q6,20 4,18 Z" fill="#5a5"/>
+  <!-- Highlight -->
+  <ellipse cx="8" cy="9" rx="3" ry="2" fill="#7c7" opacity="0.5"/>
+  <!-- Eyes -->
+  <circle cx="9" cy="14" r="2" fill="#fff"/>
+  <circle cx="15" cy="14" r="2" fill="#fff"/>
+  <circle cx="9.5" cy="14" r="1" fill="#1a1a1a"/>
+  <circle cx="15.5" cy="14" r="1" fill="#1a1a1a"/>
+  <!-- Mouth -->
+  <path d="M10,17 Q12,18.5 14,17" fill="none" stroke="#3a3" stroke-width="0.75"/>
+</svg>

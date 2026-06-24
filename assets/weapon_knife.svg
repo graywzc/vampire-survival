@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  weapon_knife.svg — Original placeholder sprite
+  License: Public Domain (CC0)
+  Author: Generated for vampire-survival-assets prototype
+  Description: Knife / throwing projectile, 28x10
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="28" height="10" viewBox="0 0 28 10">
+  <!-- Blade -->
+  <polygon points="14,5 28,4 28,6" fill="#c0c0c0"/>
+  <!-- Blade edge highlight -->
+  <polygon points="14,5 28,5 28,6" fill="#e0e0e0"/>
+  <!-- Guard -->
+  <rect x="11" y="3" width="3" height="4" rx="0.5" fill="#8b6914"/>
+  <!-- Handle -->
+  <rect x="2" y="3.5" width="9" height="3" rx="1" fill="#5a3a1a"/>
+  <!-- Handle wrap -->
+  <line x1="4" y1="3.5" x2="4" y2="6.5" stroke="#8b6914" stroke-width="0.5"/>
+  <line x1="6" y1="3.5" x2="6" y2="6.5" stroke="#8b6914" stroke-width="0.5"/>
+  <line x1="8" y1="3.5" x2="8" y2="6.5" stroke="#8b6914" stroke-width="0.5"/>
+</svg>
