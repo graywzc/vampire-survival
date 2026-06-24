@@ -12,11 +12,17 @@ const H = canvas.height;
 const el = (id) => document.getElementById(id);
 
 // ── Game state ────────────────────────────────────────────────────
-let gameState = 'menu'; // menu | playing | paused | levelup | gameover
+let gameState = 'menu'; // menu | playing | paused | levelup | reaper | gameover
 let gameTime = 0;
 let lastTime = 0;
 let animFrameId = null;
-const WIN_TIME = 300; // 5 minutes
+const WIN_TIME = 300;    // 5 minutes — triggers Reaper pressure
+const REAPER_TIME = 420; // 7 minutes — final win condition
+
+// ── Caps ──────────────────────────────────────────────────────────
+const MAX_ENEMIES = 300;
+const MAX_PROJS   = 120;
+const MAX_GEMS    = 500;
 
 // ── Player ────────────────────────────────────────────────────────
 const P = {
@@ -26,6 +32,7 @@ const P = {
   invTimer: 0,
   damage: 10,
   wCd: 0, wRate: 0.8,
+  boltCd: 0, boltRate: 1.2,
   projSpeed: 400,
   orbitCount: 1, orbitRadius: 60, orbitAngle: 0,
 };
@@ -36,6 +43,7 @@ function resetPlayer() {
   P.xp = 0; P.xpToNext = 20; P.kills = 0;
   P.invTimer = 0; P.damage = 10;
   P.wCd = 0; P.wRate = 0.8;
+  P.boltCd = 0; P.boltRate = 1.2;
   P.projSpeed = 400;
   P.orbitCount = 1; P.orbitRadius = 60; P.orbitAngle = 0;
 }
@@ -48,6 +56,7 @@ const ETYPES = {
   basic: { r: 10, spd: 60, hp: 20, dmg: 8, color: '#ef4444', xp: 3 },
   fast:  { r: 8,  spd: 110, hp: 10, dmg: 5, color: '#f97316', xp: 2 },
   tank:  { r: 16, spd: 35, hp: 60, dmg: 15, color: '#a855f7', xp: 6 },
+  reaper:{ r: 14, spd: 80, hp: 100, dmg: 20, color: '#000000', xp: 10 },
 };
 
 function spawnEnemy() {
@@ -56,6 +65,8 @@ function spawnEnemy() {
   let type = 'basic';
   if (gameTime > 60 && Math.random() < 0.3) type = 'fast';
   if (gameTime > 120 && Math.random() < 0.15) type = 'tank';
+  // Reaper spawns during pressure phase
+  if (gameTime >= WIN_TIME && Math.random() < 0.25) type = 'reaper';
   const t = ETYPES[type];
   const hm = 1 + gameTime / 120;
   enemies.push({
@@ -70,12 +81,14 @@ function spawnEnemy() {
 // ── Projectiles ───────────────────────────────────────────────────
 let projs = [];
 
-function fireProjectile(x, y, angle, dmg) {
+function fireProjectile(x, y, angle, dmg, color) {
+  if (projs.length >= MAX_PROJS) return;
   projs.push({
     x, y,
     vx: Math.cos(angle) * P.projSpeed,
     vy: Math.sin(angle) * P.projSpeed,
-    r: 4, dmg: dmg || P.damage, life: 2.5, color: '#22d3ee',
+    r: 4, dmg: dmg || P.damage, life: 2.5,
+    color: color || '#22d3ee',
   });
 }
 
@@ -103,6 +116,7 @@ const UPGRADES = [
 ];
 
 function spawnGem(x, y, val) {
+  if (gems.length >= MAX_GEMS) return;
   gems.push({ x: x + (Math.random() - 0.5) * 20, y: y + (Math.random() - 0.5) * 20, val, r: 4 });
 }
 
@@ -134,15 +148,21 @@ function updateHud() {
   el('hud-level-val').textContent = P.level;
   el('hud-kills-val').textContent = P.kills;
 
-  // Weapons list
+  // Weapons list — orbit + bolt
   const wl = el('hud-weapons-list');
   wl.innerHTML = '';
   for (let i = 0; i < P.orbitCount; i++) {
     const s = document.createElement('div');
     s.className = 'weapon-slot';
     s.textContent = '✦';
+    s.title = 'Orbit';
     wl.appendChild(s);
   }
+  const b = document.createElement('div');
+  b.className = 'weapon-slot';
+  b.textContent = '⚡';
+  b.title = 'Bolt';
+  wl.appendChild(b);
 }
 
 // ── Level-up UI ───────────────────────────────────────────────────
@@ -168,6 +188,20 @@ function applyUpgrade(u) {
   levelUpPending = false;
   levelUpTimer = 0;
   el('overlay-levelup').classList.add('hidden');
+  // Resume gameplay
+  gameState = gameState === 'reaper' ? 'reaper' : 'playing';
+  lastTime = performance.now();
+  animFrameId = requestAnimationFrame(gameLoop);
+}
+
+// ── Reaper pressure visual ────────────────────────────────────────
+let reaperTriggered = false;
+
+function triggerReaper() {
+  reaperTriggered = true;
+  // Brief visual flash
+  ctx.fillStyle = 'rgba(80, 0, 0, 0.4)';
+  ctx.fillRect(0, 0, W, H);
 }
 
 // ── Game flow ─────────────────────────────────────────────────────
@@ -185,18 +219,18 @@ function startGame() {
   spawnTimer = 0;
   levelUpPending = false;
   levelUpTimer = 0;
+  reaperTriggered = false;
   gameTime = 0;
   lastTime = performance.now();
   gameState = 'playing';
   hideAllOverlays();
-  // Restore game-over heading
   el('overlay-gameover').querySelector('h2').textContent = 'Game Over';
   if (animFrameId) cancelAnimationFrame(animFrameId);
   animFrameId = requestAnimationFrame(gameLoop);
 }
 
 function pauseGame() {
-  if (gameState !== 'playing') return;
+  if (gameState !== 'playing' && gameState !== 'reaper') return;
   gameState = 'paused';
   el('overlay-pause').classList.remove('hidden');
 }
@@ -238,10 +272,17 @@ function showWin() {
 const TILE = 64;
 
 function drawBackground() {
-  ctx.fillStyle = '#1a1a2e';
+  // Dark ground with Reaper tint
+  if (gameState === 'reaper') {
+    ctx.fillStyle = '#1a0a0a';
+  } else {
+    ctx.fillStyle = '#1a1a2e';
+  }
   ctx.fillRect(0, 0, W, H);
 
-  ctx.strokeStyle = 'rgba(60, 40, 80, 0.4)';
+  ctx.strokeStyle = gameState === 'reaper'
+    ? 'rgba(100, 20, 20, 0.4)'
+    : 'rgba(60, 40, 80, 0.4)';
   ctx.lineWidth = 1;
   const sx = Math.floor(camX / TILE) * TILE;
   const sy = Math.floor(camY / TILE) * TILE;
@@ -255,7 +296,9 @@ function drawBackground() {
     ctx.beginPath(); ctx.moveTo(0, s); ctx.lineTo(W, s); ctx.stroke();
   }
 
-  ctx.fillStyle = 'rgba(30, 20, 50, 0.3)';
+  ctx.fillStyle = gameState === 'reaper'
+    ? 'rgba(60, 10, 10, 0.3)'
+    : 'rgba(30, 20, 50, 0.3)';
   for (let tx = 0; tx < Math.ceil(W / TILE) + 2; tx++) {
     for (let ty = 0; ty < Math.ceil(H / TILE) + 2; ty++) {
       const wx = sx + tx * TILE;
@@ -265,6 +308,23 @@ function drawBackground() {
         ctx.fillRect(wx - camX, wy - camY, TILE, TILE);
       }
     }
+  }
+
+  // Reaper vignette
+  if (gameState === 'reaper') {
+    const grad = ctx.createRadialGradient(W / 2, H / 2, 100, W / 2, H / 2, W * 0.7);
+    grad.addColorStop(0, 'rgba(0,0,0,0)');
+    grad.addColorStop(1, 'rgba(80,0,0,0.35)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+
+    // Reaper countdown text
+    ctx.fillStyle = '#dc2626';
+    ctx.font = 'bold 16px sans-serif';
+    ctx.textAlign = 'center';
+    const remaining = Math.max(0, REAPER_TIME - gameTime);
+    ctx.fillText('⚰ REAPER — ' + fmtTime(remaining) + ' remaining', W / 2, H - 60);
+    ctx.textAlign = 'start';
   }
 }
 
@@ -294,6 +354,12 @@ function drawEnemies() {
     ctx.beginPath();
     ctx.arc(sx, sy, e.r, 0, Math.PI * 2);
     ctx.fill();
+    // Reaper enemies get a skull outline
+    if (e.color === '#000000') {
+      ctx.strokeStyle = '#dc2626';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
     if (e.hp < e.maxHp) {
       const bw = e.r * 2;
       ctx.fillStyle = 'rgba(0,0,0,0.6)';
@@ -338,11 +404,38 @@ function drawGems() {
 
 // ── Main loop ─────────────────────────────────────────────────────
 function gameLoop(timestamp) {
-  if (gameState !== 'playing') return;
+  // Level-up state: only update timer, don't advance game
+  if (gameState === 'levelup') {
+    levelUpTimer -= (timestamp - lastTime) / 1000;
+    lastTime = timestamp;
+    el('levelup-timer').textContent = Math.max(levelUpTimer, 0).toFixed(1) + 's';
+    if (levelUpTimer <= 0) {
+      // Auto-pick first card
+      const cards = document.querySelectorAll('.choice-card');
+      if (cards.length > 0) cards[0].click();
+    }
+    // Still render the scene frozen
+    ctx.clearRect(0, 0, W, H);
+    drawBackground();
+    drawGems();
+    drawEnemies();
+    drawProjectiles();
+    drawPlayer();
+    animFrameId = requestAnimationFrame(gameLoop);
+    return;
+  }
+
+  if (gameState !== 'playing' && gameState !== 'reaper') return;
 
   const dt = Math.min((timestamp - lastTime) / 1000, 0.05);
   lastTime = timestamp;
   gameTime += dt;
+
+  // ── Reaper pressure transition ──
+  if (gameTime >= WIN_TIME && !reaperTriggered) {
+    triggerReaper();
+    gameState = 'reaper';
+  }
 
   // ── Update ──
   // Player movement
@@ -354,21 +447,23 @@ function gameLoop(timestamp) {
 
   updateCamera();
 
-  // Spawn enemies
+  // Spawn enemies (faster during Reaper)
   spawnTimer -= dt;
   if (spawnTimer <= 0) {
-    const count = Math.min(1 + Math.floor(gameTime / 30), 5);
-    for (let i = 0; i < count; i++) spawnEnemy();
-    spawnTimer = Math.max(1.5 - gameTime / 200, 0.3);
+    const reaperMult = gameState === 'reaper' ? 2 : 1;
+    const count = Math.min(1 + Math.floor(gameTime / 30), 5) * reaperMult;
+    for (let i = 0; i < count && enemies.length < MAX_ENEMIES; i++) spawnEnemy();
+    spawnTimer = Math.max(1.5 - gameTime / 200, 0.3) / reaperMult;
   }
 
-  // Move enemies
+  // Move enemies + contact damage (proper circle overlap)
   for (let i = enemies.length - 1; i >= 0; i--) {
     const e = enemies[i];
     const ddx = P.x - e.x;
     const ddy = P.y - e.y;
     const dist = Math.sqrt(ddx * ddx + ddy * ddy);
-    if (dist < 1) {
+    const overlapDist = P.radius + e.r;
+    if (dist < overlapDist) {
       if (P.invTimer <= 0) {
         P.hp -= e.dmg;
         P.invTimer = 0.5;
@@ -440,44 +535,43 @@ function gameLoop(timestamp) {
     if (ddx * ddx + ddy * ddy > 800 * 800) gems.splice(i, 1);
   }
 
-  // Level up check
+  // Level up check — pause into levelup state
   if (P.xp >= P.xpToNext && !levelUpPending) {
     P.level++;
     P.xpToNext = Math.floor(20 * Math.pow(1.3, P.level - 1));
     levelUpPending = true;
     levelUpTimer = LEVEL_UP_TIMEOUT;
     showLevelUp();
-    // Pause the loop while choosing
+    gameState = 'levelup';
+    lastTime = performance.now();
+    animFrameId = requestAnimationFrame(gameLoop);
     return;
   }
 
-  // Level-up timer countdown
-  if (levelUpPending) {
-    levelUpTimer -= dt;
-    el('levelup-timer').textContent = Math.max(levelUpTimer, 0).toFixed(1) + 's';
-    if (levelUpTimer <= 0) {
-      const cards = document.querySelectorAll('.choice-card');
-      if (cards.length > 0) cards[0].click();
-    }
-  }
-
-  // Fire weapons
+  // Fire orbit weapons (circle around player)
   P.wCd -= dt;
   if (P.wCd <= 0) {
     P.wCd = P.wRate;
+    for (let i = 0; i < P.orbitCount; i++) {
+      const a = P.orbitAngle + (Math.PI * 2 / P.orbitCount) * i;
+      const ox = P.x + Math.cos(a) * P.orbitRadius;
+      const oy = P.y + Math.sin(a) * P.orbitRadius;
+      fireProjectile(ox, oy, a);
+    }
+  }
+
+  // Fire nearest-enemy bolt (separate cooldown)
+  P.boltCd -= dt;
+  if (P.boltCd <= 0) {
+    P.boltCd = P.boltRate;
     let nearest = null, nDist = Infinity;
     for (const e of enemies) {
       const d = (e.x - P.x) ** 2 + (e.y - P.y) ** 2;
       if (d < nDist) { nDist = d; nearest = e; }
     }
-    for (let i = 0; i < P.orbitCount; i++) {
-      if (nearest) {
-        const a = Math.atan2(nearest.y - P.y, nearest.x - P.x);
-        fireProjectile(P.x + Math.cos(a) * P.orbitRadius, P.y + Math.sin(a) * P.orbitRadius, a);
-      } else {
-        const a = P.orbitAngle + (Math.PI * 2 / P.orbitCount) * i;
-        fireProjectile(P.x + Math.cos(a) * P.orbitRadius, P.y + Math.sin(a) * P.orbitRadius, a);
-      }
+    if (nearest) {
+      const a = Math.atan2(nearest.y - P.y, nearest.x - P.x);
+      fireProjectile(P.x, P.y, a, P.damage, '#fbbf24');
     }
   }
 
@@ -487,8 +581,8 @@ function gameLoop(timestamp) {
     return;
   }
 
-  // Win check
-  if (gameTime >= WIN_TIME) {
+  // Win check (survive until REAPER_TIME)
+  if (gameTime >= REAPER_TIME) {
     showWin();
     return;
   }
