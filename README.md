@@ -1,0 +1,87 @@
+# Vampire Survivors Prototype
+
+A quick-playable browser game inspired by Vampire Survivors, built with vanilla HTML, CSS, and JavaScript.
+
+## Quick Start
+
+Open `index.html` in a modern browser (Chrome, Firefox, Safari, Edge). No build step required.
+
+```bash
+# Optional: serve via a local server
+npx serve .
+# or
+python3 -m http.server 8000
+```
+
+## Controls
+
+- **WASD** / **Arrow Keys** — Move character
+- **Mouse** — (reserved for future targeting)
+
+## Project Structure
+
+```
+├── index.html              # Entry point
+├── styles.css              # Gothic desktop layout
+├── assets/                  # Placeholder assets
+├── IMPLEMENTATION_PLAN.md  # Phased development plan
+└── ASSETS.md               # Asset manifest & licensing
+```
+
+## Development
+
+This project is structured for incremental agent-driven development. See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for the phased roadmap.
+
+### Tech Stack
+
+- Vanilla HTML5 Canvas
+- CSS3 with custom properties
+- ES Modules (no bundler)
+- No external dependencies
+
+### DOM Contract
+
+The following IDs are reserved for gameplay agents. Do not rename or remove them:
+
+**Canvas**
+- `game` — main rendering canvas (1280×720)
+
+**HUD**
+- `hud-time` — elapsed timer display
+- `hud-level-val` — current level number
+- `hud-kills-val` — enemy kill count
+- `hud-health-bar` — health bar fill element
+- `hud-health-val` — health numeric display
+- `hud-xp-bar` — XP bar fill element
+- `hud-xp-val` — XP numeric display
+- `hud-weapons-list` — active weapons container
+
+**Overlays**
+- `overlay-start` — start screen
+- `overlay-pause` — pause screen
+- `overlay-levelup` — level-up choice screen
+- `overlay-gameover` — game-over screen
+
+**Overlay Content**
+- `levelup-choices` — dynamic upgrade choice grid
+- `levelup-timer` — level-up countdown display
+- `go-time` / `go-level` / `go-kills` — game-over stats
+
+**Buttons**
+- `btn-play` — start screen play button
+- `btn-start` — controls bar start button
+- `btn-pause` — controls bar pause button
+- `btn-restart` — controls bar restart button
+- `btn-resume` — pause overlay resume button
+- `btn-quit` — pause overlay quit button
+- `btn-retry` — game-over retry button
+
+### Target
+
+- Desktop-first layout (1280×720)
+- 60 FPS target
+- Progressive enhancement
+
+## License
+
+This is a prototype for educational purposes. No copyrighted assets from Vampire Survivors are included. See [ASSETS.md](ASSETS.md) for asset licensing details.
