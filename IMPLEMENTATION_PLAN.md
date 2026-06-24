@@ -10,12 +10,41 @@ This document outlines the phased implementation plan for a quick-playable vanil
 
 - [x] `index.html` with canvas, HUD, overlays
 - [x] `styles.css` with gothic desktop layout
-- [x] `README.md` with setup instructions
+- [x] `README.md` with setup instructions and DOM contract
 - [x] `ASSETS.md` with asset manifest and licensing
-- [x] Placeholder assets (1×1 PNG, placeholder WAV)
-- [x] Empty `src/main.js` ES module placeholder
+- [x] Placeholder asset (1×1 PNG)
 
-**Deliverables:** `index.html`, `styles.css`, `README.md`, `ASSETS.md`, `assets/**`, `src/main.js`
+**Deliverables:** `index.html`, `styles.css`, `README.md`, `ASSETS.md`, `assets/placeholder.png`
+
+**DOM IDs provided for later phases:**
+
+| ID | Purpose |
+|----|---------|
+| `game` | Main canvas element |
+| `hud-time` | Timer display |
+| `hud-level-val` | Level number |
+| `hud-kills-val` | Kill counter |
+| `hud-health-bar` | Health bar fill |
+| `hud-health-val` | Health value |
+| `hud-xp-bar` | XP bar fill |
+| `hud-xp-val` | XP value |
+| `hud-weapons-list` | Weapons container |
+| `overlay-start` | Start screen overlay |
+| `overlay-pause` | Pause overlay |
+| `overlay-levelup` | Level-up overlay |
+| `overlay-gameover` | Game-over overlay |
+| `levelup-choices` | Upgrade choice grid |
+| `levelup-timer` | Level-up countdown |
+| `go-time` | Game-over time stat |
+| `go-level` | Game-over level stat |
+| `go-kills` | Game-over kills stat |
+| `btn-play` | Start screen play button |
+| `btn-start` | Controls bar start |
+| `btn-pause` | Controls bar pause |
+| `btn-restart` | Controls bar restart |
+| `btn-resume` | Pause resume button |
+| `btn-quit` | Pause quit button |
+| `btn-retry` | Game-over retry button |
 
 ## Phase 2 — Core Game Loop & Player
 
@@ -81,10 +110,9 @@ project-root/
 ├── index.html            # Entry point, loads styles + main.js
 ├── styles.css            # All styling (HUD, overlays, gothic theme)
 ├── src/
-│   └── main.js           # Game entry, loop, entity management
+│   └── main.js           # Game entry, loop, entity management (Phase 2+)
 ├── assets/
-│   ├── placeholder.png   # 1×1 transparent PNG
-│   └── placeholder.wav   # 1-sample silent WAV
+│   └── placeholder.png   # 1×1 transparent PNG
 ├── IMPLEMENTATION_PLAN.md
 ├── README.md
 └── ASSETS.md

@@ -7,7 +7,6 @@ All assets in this project are safe placeholders or original creations. No copyr
 | File | Type | Description | License |
 |------|------|-------------|---------|
 | `assets/placeholder.png` | Image | 1×1 transparent PNG placeholder | Public Domain |
-| `assets/placeholder.wav` | Audio | 1-sample silent WAV placeholder | Public Domain |
 
 ## Placeholder Policy
 

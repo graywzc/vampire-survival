@@ -15,15 +15,15 @@
     <div id="hud">
       <div id="hud-top">
         <div id="hud-timer" class="hud-item">
-          <span class="hud-icon">⏱</span>
+          <span class="hud-icon" aria-hidden="true"></span>
           <span id="hud-time">00:00</span>
         </div>
         <div id="hud-level" class="hud-item">
-          <span class="hud-icon">⭐</span>
+          <span class="hud-icon" aria-hidden="true"></span>
           <span id="hud-level-val">1</span>
         </div>
         <div id="hud-kills" class="hud-item">
-          <span class="hud-icon">💀</span>
+          <span class="hud-icon" aria-hidden="true"></span>
           <span id="hud-kills-val">0</span>
         </div>
       </div>
@@ -50,31 +50,31 @@
 
       <!-- Weapons Display -->
       <div id="hud-weapons" class="hud-item">
-        <span class="hud-icon">🗡</span>
+        <span class="hud-icon" aria-hidden="true"></span>
         <div id="hud-weapons-list"></div>
       </div>
     </div>
 
     <!-- Controls Bar -->
     <div id="controls-bar">
-      <button id="btn-start" class="ctrl-btn" title="Start Game">▶ Start</button>
-      <button id="btn-pause" class="ctrl-btn" title="Pause Game">⏸ Pause</button>
-      <button id="btn-restart" class="ctrl-btn" title="Restart Game">↻ Restart</button>
+      <button id="btn-start" class="ctrl-btn" title="Start Game">Start</button>
+      <button id="btn-pause" class="ctrl-btn" title="Pause Game">Pause</button>
+      <button id="btn-restart" class="ctrl-btn" title="Restart Game">Restart</button>
     </div>
 
     <!-- Pause Overlay -->
     <div id="overlay-pause" class="overlay hidden">
       <div class="overlay-content">
-        <h2>⏸ Game Paused</h2>
-        <button id="btn-resume" class="overlay-btn">▶ Resume</button>
-        <button id="btn-quit" class="overlay-btn secondary">✕ Quit to Menu</button>
+        <h2>Game Paused</h2>
+        <button id="btn-resume" class="overlay-btn">Resume</button>
+        <button id="btn-quit" class="overlay-btn secondary">Quit to Menu</button>
       </div>
     </div>
 
     <!-- Level Up Overlay -->
     <div id="overlay-levelup" class="overlay hidden">
       <div class="overlay-content">
-        <h2>⭐ Level Up!</h2>
+        <h2>Level Up!</h2>
         <p class="overlay-subtitle">Choose an upgrade</p>
         <div id="levelup-choices" class="choice-grid">
           <!-- Populated dynamically -->
@@ -86,25 +86,25 @@
     <!-- Game Over Overlay -->
     <div id="overlay-gameover" class="overlay hidden">
       <div class="overlay-content">
-        <h2>☠ Game Over</h2>
+        <h2>Game Over</h2>
         <div id="gameover-stats">
           <p>Time Survived: <strong id="go-time">00:00</strong></p>
           <p>Level Reached: <strong id="go-level">1</strong></p>
           <p>Enemies Slain: <strong id="go-kills">0</strong></p>
         </div>
-        <button id="btn-retry" class="overlay-btn">↻ Play Again</button>
+        <button id="btn-retry" class="overlay-btn">Play Again</button>
       </div>
     </div>
 
     <!-- Start Screen Overlay -->
     <div id="overlay-start" class="overlay">
       <div class="overlay-content">
-        <h1>🧛 Vampire Survivors Prototype</h1>
+        <h1>Vampire Survivors Prototype</h1>
         <p class="overlay-subtitle">Survive the horde. Collect XP. Grow stronger.</p>
         <p class="overlay-controls">
           <strong>Controls:</strong> WASD / Arrow Keys to move
         </p>
-        <button id="btn-play" class="overlay-btn primary">▶ Play</button>
+        <button id="btn-play" class="overlay-btn primary">Play</button>
       </div>
     </div>
   </div>
