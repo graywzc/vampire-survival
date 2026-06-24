@@ -96,6 +96,8 @@ function fireProjectile(x, y, angle, dmg, color) {
 let gems = [];
 let levelUpPending = false;
 let levelUpTimer = 0;
+let levelUpPrevState = 'playing'; // remembers playing|reaper before levelup pause
+let pausePrevState = 'playing';    // remembers playing|reaper before pause
 const LEVEL_UP_TIMEOUT = 5;
 
 const UPGRADES = [
@@ -154,13 +156,13 @@ function updateHud() {
   for (let i = 0; i < P.orbitCount; i++) {
     const s = document.createElement('div');
     s.className = 'weapon-slot';
-    s.textContent = '✦';
+    s.textContent = 'O';
     s.title = 'Orbit';
     wl.appendChild(s);
   }
   const b = document.createElement('div');
   b.className = 'weapon-slot';
-  b.textContent = '⚡';
+  b.textContent = 'B';
   b.title = 'Bolt';
   wl.appendChild(b);
 }
@@ -188,8 +190,8 @@ function applyUpgrade(u) {
   levelUpPending = false;
   levelUpTimer = 0;
   el('overlay-levelup').classList.add('hidden');
-  // Resume gameplay
-  gameState = gameState === 'reaper' ? 'reaper' : 'playing';
+  // Resume to the state we were in before levelup (playing or reaper)
+  gameState = levelUpPrevState;
   lastTime = performance.now();
   animFrameId = requestAnimationFrame(gameLoop);
 }
@@ -219,6 +221,8 @@ function startGame() {
   spawnTimer = 0;
   levelUpPending = false;
   levelUpTimer = 0;
+  levelUpPrevState = 'playing';
+  pausePrevState = 'playing';
   reaperTriggered = false;
   gameTime = 0;
   lastTime = performance.now();
@@ -231,13 +235,14 @@ function startGame() {
 
 function pauseGame() {
   if (gameState !== 'playing' && gameState !== 'reaper') return;
+  pausePrevState = gameState; // save playing|reaper
   gameState = 'paused';
   el('overlay-pause').classList.remove('hidden');
 }
 
 function resumeGame() {
   if (gameState !== 'paused') return;
-  gameState = 'playing';
+  gameState = pausePrevState; // restore playing|reaper
   lastTime = performance.now();
   el('overlay-pause').classList.add('hidden');
   animFrameId = requestAnimationFrame(gameLoop);
@@ -323,7 +328,7 @@ function drawBackground() {
     ctx.font = 'bold 16px sans-serif';
     ctx.textAlign = 'center';
     const remaining = Math.max(0, REAPER_TIME - gameTime);
-    ctx.fillText('⚰ REAPER — ' + fmtTime(remaining) + ' remaining', W / 2, H - 60);
+    ctx.fillText('[REAPER] ' + fmtTime(remaining) + ' remaining', W / 2, H - 60);
     ctx.textAlign = 'start';
   }
 }
@@ -511,19 +516,20 @@ function gameLoop(timestamp) {
     }
   }
 
-  // Gems
+  // Gems — collect first (avoids div-by-zero in magnet when dist==0)
   for (let i = gems.length - 1; i >= 0; i--) {
     const g = gems[i];
     const ddx = P.x - g.x;
     const ddy = P.y - g.y;
     const dist = Math.sqrt(ddx * ddx + ddy * ddy);
-    if (dist < 100) {
-      g.x += (ddx / dist) * 300 * dt;
-      g.y += (ddy / dist) * 300 * dt;
-    }
     if (dist < P.radius + g.r) {
       P.xp += g.val;
       gems.splice(i, 1);
+      continue;
+    }
+    if (dist < 100 && dist > 0.1) {
+      g.x += (ddx / dist) * 300 * dt;
+      g.y += (ddy / dist) * 300 * dt;
     }
   }
 
@@ -542,6 +548,7 @@ function gameLoop(timestamp) {
     levelUpPending = true;
     levelUpTimer = LEVEL_UP_TIMEOUT;
     showLevelUp();
+    levelUpPrevState = gameState; // save playing|reaper before pausing
     gameState = 'levelup';
     lastTime = performance.now();
     animFrameId = requestAnimationFrame(gameLoop);
