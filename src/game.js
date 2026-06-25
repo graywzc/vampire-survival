@@ -55,29 +55,74 @@ let enemies = [];
 let spawnTimer = 0;
 
 const ETYPES = {
-  basic: { r: 10, spd: 50, hp: 15, dmg: 5, color: '#ef4444', xp: 4 },
-  fast:  { r: 8,  spd: 90, hp: 10, dmg: 4, color: '#f97316', xp: 3 },
-  tank:  { r: 16, spd: 30, hp: 50, dmg: 10, color: '#a855f7', xp: 8 },
-  reaper:{ r: 14, spd: 70, hp: 80, dmg: 15, color: '#000000', xp: 10 },
+  skeleton: { name: 'Skeleton', r: 10, spd: 50, hp: 16, dmg: 5, color: '#ef4444', xp: 4, behavior: 'chase' },
+  bat:      { name: 'Bat', r: 8,  spd: 95, hp: 10, dmg: 4, color: '#f97316', xp: 3, behavior: 'zigzag' },
+  slime:    { name: 'Slime', r: 12, spd: 38, hp: 24, dmg: 6, color: '#22c55e', xp: 5, behavior: 'chase', split: 'miniSlime' },
+  miniSlime:{ name: 'Mini Slime', r: 7, spd: 64, hp: 8, dmg: 3, color: '#86efac', xp: 1, behavior: 'chase' },
+  brute:    { name: 'Brute', r: 17, spd: 34, hp: 56, dmg: 11, color: '#a855f7', xp: 8, behavior: 'charge' },
+  wraith:   { name: 'Wraith', r: 11, spd: 62, hp: 28, dmg: 8, color: '#38bdf8', xp: 7, behavior: 'drift' },
+  reaper:   { name: 'Reaper', r: 14, spd: 74, hp: 85, dmg: 15, color: '#000000', xp: 10, behavior: 'drift' },
 };
+
+function chooseEnemyType() {
+  if (gameTime >= WIN_TIME && Math.random() < 0.25) return 'reaper';
+  const pool = [{ type: 'skeleton', weight: 8 }];
+  if (gameTime > 25) pool.push({ type: 'bat', weight: 4 });
+  if (gameTime > 55) pool.push({ type: 'slime', weight: 4 });
+  if (gameTime > 100) pool.push({ type: 'wraith', weight: 3 });
+  if (gameTime > 145) pool.push({ type: 'brute', weight: 3 });
+
+  const total = pool.reduce((sum, entry) => sum + entry.weight, 0);
+  let roll = Math.random() * total;
+  for (const entry of pool) {
+    roll -= entry.weight;
+    if (roll <= 0) return entry.type;
+  }
+  return 'skeleton';
+}
+
+function createEnemy(type, x, y, hpScale = 1) {
+  const t = ETYPES[type];
+  const hm = (1 + gameTime / 120) * hpScale;
+  return {
+    type,
+    name: t.name,
+    behavior: t.behavior,
+    split: t.split,
+    x, y,
+    r: t.r,
+    spd: t.spd * (1 + gameTime / 300),
+    hp: t.hp * hm,
+    maxHp: t.hp * hm,
+    dmg: t.dmg,
+    color: t.color,
+    xpVal: t.xp,
+    age: Math.random() * Math.PI * 2,
+    phase: Math.random() * Math.PI * 2,
+  };
+}
 
 function spawnEnemy() {
   const angle = Math.random() * Math.PI * 2;
   const dist = 800 + Math.random() * 200;
-  let type = 'basic';
-  if (gameTime > 90 && Math.random() < 0.25) type = 'fast';
-  if (gameTime > 150 && Math.random() < 0.12) type = 'tank';
-  // Reaper spawns during pressure phase
-  if (gameTime >= WIN_TIME && Math.random() < 0.25) type = 'reaper';
-  const t = ETYPES[type];
-  const hm = 1 + gameTime / 120;
-  enemies.push({
-    x: P.x + Math.cos(angle) * dist,
-    y: P.y + Math.sin(angle) * dist,
-    r: t.r, spd: t.spd * (1 + gameTime / 300),
-    hp: t.hp * hm, maxHp: t.hp * hm,
-    dmg: t.dmg, color: t.color, xpVal: t.xp,
-  });
+  enemies.push(createEnemy(
+    chooseEnemyType(),
+    P.x + Math.cos(angle) * dist,
+    P.y + Math.sin(angle) * dist
+  ));
+}
+
+function spawnSplitEnemies(e) {
+  if (!e.split || enemies.length >= MAX_ENEMIES - 1) return;
+  for (let i = 0; i < 2; i++) {
+    const angle = e.phase + Math.PI * i;
+    enemies.push(createEnemy(
+      e.split,
+      e.x + Math.cos(angle) * e.r,
+      e.y + Math.sin(angle) * e.r,
+      0.75
+    ));
+  }
 }
 
 // ── Projectiles ───────────────────────────────────────────────────
@@ -527,6 +572,26 @@ function drawEnemies() {
       ctx.lineWidth = 2;
       ctx.stroke();
     }
+    if (e.behavior === 'zigzag') {
+      ctx.strokeStyle = '#fed7aa';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(sx - e.r, sy);
+      ctx.lineTo(sx + e.r, sy);
+      ctx.stroke();
+    }
+    if (e.behavior === 'charge') {
+      ctx.strokeStyle = '#f0abfc';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(sx - e.r * 0.7, sy - e.r * 0.7, e.r * 1.4, e.r * 1.4);
+    }
+    if (e.behavior === 'drift') {
+      ctx.strokeStyle = '#bae6fd';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(sx, sy, e.r + 4, 0, Math.PI * 2);
+      ctx.stroke();
+    }
     if (e.hp < e.maxHp) {
       const bw = e.r * 2;
       ctx.fillStyle = 'rgba(0,0,0,0.6)';
@@ -626,6 +691,7 @@ function gameLoop(timestamp) {
   // Move enemies + contact damage (proper circle overlap)
   for (let i = enemies.length - 1; i >= 0; i--) {
     const e = enemies[i];
+    e.age += dt;
     const ddx = P.x - e.x;
     const ddy = P.y - e.y;
     const dist = Math.sqrt(ddx * ddx + ddy * ddy);
@@ -637,8 +703,21 @@ function gameLoop(timestamp) {
       }
       continue;
     }
-    e.x += (ddx / dist) * e.spd * dt;
-    e.y += (ddy / dist) * e.spd * dt;
+    let moveX = ddx / dist;
+    let moveY = ddy / dist;
+    let speed = e.spd;
+    if (e.behavior === 'zigzag' || e.behavior === 'drift') {
+      const sway = Math.sin(e.age * (e.behavior === 'zigzag' ? 7 : 2.5) + e.phase);
+      const amount = e.behavior === 'zigzag' ? 0.55 : 0.32;
+      moveX += (-ddy / dist) * sway * amount;
+      moveY += (ddx / dist) * sway * amount;
+    }
+    if (e.behavior === 'charge') {
+      speed *= Math.sin(e.age * 2.8 + e.phase) > 0.55 ? 1.9 : 0.72;
+    }
+    const mag = Math.sqrt(moveX * moveX + moveY * moveY) || 1;
+    e.x += (moveX / mag) * speed * dt;
+    e.y += (moveY / mag) * speed * dt;
   }
 
   // Cull far enemies
@@ -671,6 +750,7 @@ function gameLoop(timestamp) {
         if (e.hp <= 0) {
           P.kills++;
           spawnGem(e.x, e.y, e.xpVal);
+          spawnSplitEnemies(e);
           enemies.splice(j, 1);
         }
         if (p.pierce <= 0) projs.splice(i, 1);

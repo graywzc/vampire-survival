@@ -25,6 +25,14 @@ python3 -m http.server 8000
 - Active weapons can level up independently, improving cooldowns, volleys, pierce, or shard count.
 - General upgrades still improve movement, health, pickup radius, projectile speed, and all weapon damage.
 
+## Enemy Variety
+
+- **Skeletons** form the baseline horde.
+- **Bats** weave side to side while closing distance.
+- **Slimes** split into smaller slimes when defeated.
+- **Wraiths** drift around the player approach vector.
+- **Brutes** alternate between slow movement and short charge bursts.
+
 ## Project Structure
 
 ```
