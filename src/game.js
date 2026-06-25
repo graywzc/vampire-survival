@@ -30,24 +30,24 @@ const P = {
   hp: 150, maxHp: 150, level: 1,
   xp: 0, xpToNext: 12, kills: 0,
   invTimer: 0,
-  damage: 10,
-  wCd: 0, wRate: 0.8,
-  boltCd: 0, boltRate: 1.2,
+  damage: 0,
+  cooldownMult: 1,
   projSpeed: 400,
-  orbitCount: 1, orbitRadius: 60, orbitAngle: 0,
+  orbitAngle: 0,
   pickupRadius: 100,
+  weapons: {},
 };
 
 function resetPlayer() {
   P.x = 0; P.y = 0; P.speed = 180;
   P.hp = 150; P.maxHp = 150; P.level = 1;
   P.xp = 0; P.xpToNext = 12; P.kills = 0;
-  P.invTimer = 0; P.damage = 10;
-  P.wCd = 0; P.wRate = 0.8;
-  P.boltCd = 0; P.boltRate = 1.2;
+  P.invTimer = 0; P.damage = 0; P.cooldownMult = 1;
   P.projSpeed = 400;
-  P.orbitCount = 1; P.orbitRadius = 60; P.orbitAngle = 0;
+  P.orbitAngle = 0;
   P.pickupRadius = 100;
+  P.weapons = {};
+  unlockWeapon('magicBolt');
 }
 
 // ── Enemies ───────────────────────────────────────────────────────
@@ -83,16 +83,148 @@ function spawnEnemy() {
 // ── Projectiles ───────────────────────────────────────────────────
 let projs = [];
 
-function fireProjectile(x, y, angle, dmg, color) {
+function fireProjectile(x, y, angle, opts = {}) {
   if (projs.length >= MAX_PROJS) return;
+  const speed = opts.speed || P.projSpeed;
   projs.push({
     x, y,
-    vx: Math.cos(angle) * P.projSpeed,
-    vy: Math.sin(angle) * P.projSpeed,
-    r: 4, dmg: dmg || P.damage, life: 2.5,
-    color: color || '#22d3ee',
+    vx: Math.cos(angle) * speed,
+    vy: Math.sin(angle) * speed,
+    r: opts.r || 4,
+    dmg: opts.dmg || 10,
+    life: opts.life || 2.5,
+    pierce: opts.pierce || 1,
+    color: opts.color || '#22d3ee',
+    weaponId: opts.weaponId || 'unknown',
   });
 }
+
+function findNearestEnemy(x = P.x, y = P.y) {
+  let nearest = null;
+  let nDist = Infinity;
+  for (const e of enemies) {
+    const d = (e.x - x) ** 2 + (e.y - y) ** 2;
+    if (d < nDist) {
+      nDist = d;
+      nearest = e;
+    }
+  }
+  return nearest;
+}
+
+function getWeaponLevel(id) {
+  return P.weapons[id]?.level || 0;
+}
+
+function getWeaponDamage(id) {
+  const def = WEAPONS[id];
+  const level = getWeaponLevel(id);
+  return def.baseDamage + (level - 1) * def.damageStep + P.damage;
+}
+
+function unlockWeapon(id) {
+  if (P.weapons[id]) return false;
+  P.weapons[id] = { level: 1, cd: 0 };
+  return true;
+}
+
+function upgradeWeapon(id) {
+  const weapon = P.weapons[id];
+  if (!weapon) return unlockWeapon(id);
+  const def = WEAPONS[id];
+  if (weapon.level >= def.maxLevel) return false;
+  weapon.level++;
+  weapon.cd = Math.min(weapon.cd, getWeaponRate(id));
+  return true;
+}
+
+function getWeaponRate(id) {
+  return WEAPONS[id].rate(getWeaponLevel(id)) * P.cooldownMult;
+}
+
+function fireSpread(originX, originY, angle, count, spread, opts) {
+  const start = angle - spread * (count - 1) / 2;
+  for (let i = 0; i < count; i++) {
+    fireProjectile(originX, originY, start + spread * i, opts);
+  }
+}
+
+const WEAPONS = {
+  magicBolt: {
+    name: 'Magic Bolt',
+    icon: 'B',
+    color: '#fbbf24',
+    baseDamage: 10,
+    damageStep: 4,
+    maxLevel: 5,
+    rate: (level) => Math.max(1.2 - level * 0.12, 0.45),
+    desc: (level) => `Level ${level}: fires ${1 + Math.floor((level - 1) / 2)} seeking bolt${level >= 3 ? 's' : ''}`,
+    fire: (weapon) => {
+      const nearest = findNearestEnemy();
+      if (!nearest) return;
+      const level = weapon.level;
+      const angle = Math.atan2(nearest.y - P.y, nearest.x - P.x);
+      fireSpread(P.x, P.y, angle, 1 + Math.floor((level - 1) / 2), 0.18, {
+        dmg: getWeaponDamage('magicBolt'),
+        color: WEAPONS.magicBolt.color,
+        life: 2.5,
+        weaponId: 'magicBolt',
+      });
+    },
+  },
+  knife: {
+    name: 'Knife',
+    icon: 'K',
+    color: '#e5e7eb',
+    baseDamage: 7,
+    damageStep: 3,
+    maxLevel: 5,
+    rate: (level) => Math.max(0.9 - level * 0.08, 0.35),
+    desc: (level) => `Level ${level}: quick volley with ${1 + Math.floor(level / 2)} pierce`,
+    fire: (weapon) => {
+      const nearest = findNearestEnemy();
+      if (!nearest) return;
+      const level = weapon.level;
+      const angle = Math.atan2(nearest.y - P.y, nearest.x - P.x);
+      fireSpread(P.x, P.y, angle, Math.min(level + 1, 5), 0.1, {
+        dmg: getWeaponDamage('knife'),
+        color: WEAPONS.knife.color,
+        speed: P.projSpeed * 1.35,
+        life: 1.7,
+        pierce: 1 + Math.floor(level / 2),
+        weaponId: 'knife',
+      });
+    },
+  },
+  orbit: {
+    name: 'Orbit',
+    icon: 'O',
+    color: '#22d3ee',
+    baseDamage: 8,
+    damageStep: 3,
+    maxLevel: 5,
+    rate: (level) => Math.max(1.0 - level * 0.08, 0.45),
+    desc: (level) => `Level ${level}: launches ${level + 1} rotating shards`,
+    fire: (weapon) => {
+      const level = weapon.level;
+      const count = level + 1;
+      const radius = 46 + level * 8;
+      for (let i = 0; i < count; i++) {
+        const a = P.orbitAngle + (Math.PI * 2 / count) * i;
+        const ox = P.x + Math.cos(a) * radius;
+        const oy = P.y + Math.sin(a) * radius;
+        fireProjectile(ox, oy, a, {
+          dmg: getWeaponDamage('orbit'),
+          color: WEAPONS.orbit.color,
+          speed: P.projSpeed * 0.75,
+          life: 1.4,
+          pierce: 2,
+          weaponId: 'orbit',
+        });
+      }
+    },
+  },
+};
 
 // ── XP Gems ───────────────────────────────────────────────────────
 let gems = [];
@@ -102,24 +234,55 @@ let levelUpPrevState = 'playing'; // remembers playing|reaper before levelup pau
 let pausePrevState = 'playing';    // remembers playing|reaper before pause
 const LEVEL_UP_TIMEOUT = 5;
 
-const UPGRADES = [
+const BASE_UPGRADES = [
   { id: 'damage', name: 'Damage Up', desc: 'Increase weapon damage by 5',
     apply: () => { P.damage += 5; } },
   { id: 'speed', name: 'Speed Up', desc: 'Move 15% faster',
     apply: () => { P.speed *= 1.15; } },
   { id: 'firerate', name: 'Fire Rate', desc: 'Reduce all cooldowns by 15%',
-    apply: () => { P.wRate *= 0.85; P.boltRate *= 0.85; } },
+    apply: () => {
+      P.cooldownMult *= 0.85;
+      for (const weapon of Object.values(P.weapons)) weapon.cd *= 0.85;
+    } },
   { id: 'health', name: 'Heal', desc: 'Restore 40 HP',
     apply: () => { P.hp = Math.min(P.hp + 40, P.maxHp); } },
   { id: 'maxhealth', name: 'Max HP Up', desc: 'Increase max HP by 25 and heal 25',
     apply: () => { P.maxHp += 25; P.hp += 25; } },
   { id: 'pickupradius', name: 'Pickup Radius', desc: 'Increase gem magnet range by 30',
     apply: () => { P.pickupRadius += 30; } },
-  { id: 'orbitcount', name: 'Extra Orbit', desc: 'Add an orbiting projectile',
-    apply: () => { P.orbitCount += 1; } },
   { id: 'projspeed', name: 'Projectile Speed', desc: 'Projectiles fly 20% faster',
     apply: () => { P.projSpeed *= 1.2; } },
 ];
+
+function getWeaponUpgradeChoices() {
+  const choices = [];
+  for (const [id, def] of Object.entries(WEAPONS)) {
+    const level = getWeaponLevel(id);
+    if (level === 0) {
+      choices.push({
+        id: 'unlock-' + id,
+        name: 'Unlock ' + def.name,
+        desc: def.desc(1),
+        apply: () => { unlockWeapon(id); },
+      });
+      continue;
+    }
+    if (level < def.maxLevel) {
+      choices.push({
+        id: 'weapon-' + id,
+        name: def.name + ' Lv. ' + (level + 1),
+        desc: def.desc(level + 1),
+        apply: () => { upgradeWeapon(id); },
+      });
+    }
+  }
+  return choices;
+}
+
+function getLevelUpChoices() {
+  const choices = [...BASE_UPGRADES, ...getWeaponUpgradeChoices()];
+  return choices.sort(() => Math.random() - 0.5).slice(0, 3);
+}
 
 function spawnGem(x, y, val) {
   if (gems.length >= MAX_GEMS) return;
@@ -154,29 +317,24 @@ function updateHud() {
   el('hud-level-val').textContent = P.level;
   el('hud-kills-val').textContent = P.kills;
 
-  // Weapons list — orbit + bolt
+  // Weapons list
   const wl = el('hud-weapons-list');
   wl.innerHTML = '';
-  for (let i = 0; i < P.orbitCount; i++) {
+  for (const [id, weapon] of Object.entries(P.weapons)) {
+    const def = WEAPONS[id];
     const s = document.createElement('div');
     s.className = 'weapon-slot';
-    s.textContent = 'O';
-    s.title = 'Orbit';
+    s.textContent = def.icon + weapon.level;
+    s.title = def.name + ' Lv. ' + weapon.level;
     wl.appendChild(s);
   }
-  const b = document.createElement('div');
-  b.className = 'weapon-slot';
-  b.textContent = 'B';
-  b.title = 'Bolt';
-  wl.appendChild(b);
 }
 
 // ── Level-up UI ───────────────────────────────────────────────────
 function showLevelUp() {
   const container = el('levelup-choices');
   container.innerHTML = '';
-  const shuffled = [...UPGRADES].sort(() => Math.random() - 0.5);
-  const choices = shuffled.slice(0, 3);
+  const choices = getLevelUpChoices();
   choices.forEach((u) => {
     const card = document.createElement('div');
     card.className = 'choice-card';
@@ -509,12 +667,13 @@ function gameLoop(timestamp) {
       const ddy = p.y - e.y;
       if (ddx * ddx + ddy * ddy < (p.r + e.r) * (p.r + e.r)) {
         e.hp -= p.dmg;
-        projs.splice(i, 1);
+        p.pierce--;
         if (e.hp <= 0) {
           P.kills++;
           spawnGem(e.x, e.y, e.xpVal);
           enemies.splice(j, 1);
         }
+        if (p.pierce <= 0) projs.splice(i, 1);
         break;
       }
     }
@@ -559,30 +718,12 @@ function gameLoop(timestamp) {
     return;
   }
 
-  // Fire orbit weapons (circle around player)
-  P.wCd -= dt;
-  if (P.wCd <= 0) {
-    P.wCd = P.wRate;
-    for (let i = 0; i < P.orbitCount; i++) {
-      const a = P.orbitAngle + (Math.PI * 2 / P.orbitCount) * i;
-      const ox = P.x + Math.cos(a) * P.orbitRadius;
-      const oy = P.y + Math.sin(a) * P.orbitRadius;
-      fireProjectile(ox, oy, a);
-    }
-  }
-
-  // Fire nearest-enemy bolt (separate cooldown)
-  P.boltCd -= dt;
-  if (P.boltCd <= 0) {
-    P.boltCd = P.boltRate;
-    let nearest = null, nDist = Infinity;
-    for (const e of enemies) {
-      const d = (e.x - P.x) ** 2 + (e.y - P.y) ** 2;
-      if (d < nDist) { nDist = d; nearest = e; }
-    }
-    if (nearest) {
-      const a = Math.atan2(nearest.y - P.y, nearest.x - P.x);
-      fireProjectile(P.x, P.y, a, P.damage, '#fbbf24');
+  // Fire each active weapon on its own cooldown.
+  for (const [id, weapon] of Object.entries(P.weapons)) {
+    weapon.cd -= dt;
+    if (weapon.cd <= 0) {
+      WEAPONS[id].fire(weapon);
+      weapon.cd = getWeaponRate(id);
     }
   }
 
