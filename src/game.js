@@ -47,6 +47,7 @@ function resetPlayer() {
   P.orbitAngle = 0;
   P.pickupRadius = 100;
   P.weapons = {};
+  currentTerrainId = 'graveSoil';
   unlockWeapon('magicBolt');
 }
 
@@ -346,6 +347,39 @@ function toScreen(wx, wy) {
   return { x: wx - camX, y: wy - camY };
 }
 
+// ── Terrain ───────────────────────────────────────────────────────
+const TERRAIN_CELL = 320;
+let currentTerrainId = 'graveSoil';
+
+const TERRAINS = {
+  graveSoil: { name: 'Grave Soil', color: 'rgba(49, 46, 80, 0.22)', speed: 1, damage: 0 },
+  oldRoad:   { name: 'Old Road', color: 'rgba(148, 163, 184, 0.18)', speed: 1.12, damage: 0 },
+  moss:      { name: 'Moss', color: 'rgba(34, 197, 94, 0.16)', speed: 1.04, damage: 0 },
+  bog:       { name: 'Bog', color: 'rgba(20, 83, 45, 0.28)', speed: 0.72, damage: 0 },
+  cursed:    { name: 'Cursed Ground', color: 'rgba(127, 29, 29, 0.28)', speed: 0.92, damage: 2 },
+};
+
+function hashCell(cx, cy) {
+  const h = Math.sin(cx * 127.1 + cy * 311.7) * 43758.5453123;
+  return h - Math.floor(h);
+}
+
+function getTerrainId(wx, wy) {
+  const cx = Math.floor(wx / TERRAIN_CELL);
+  const cy = Math.floor(wy / TERRAIN_CELL);
+  const h = hashCell(cx, cy);
+  if (h > 0.86) return 'cursed';
+  if (h > 0.72) return 'bog';
+  if (h > 0.55) return 'oldRoad';
+  if (h > 0.38) return 'moss';
+  return 'graveSoil';
+}
+
+function getCurrentTerrain() {
+  currentTerrainId = getTerrainId(P.x, P.y);
+  return TERRAINS[currentTerrainId];
+}
+
 // ── HUD ───────────────────────────────────────────────────────────
 function fmtTime(s) {
   const m = Math.floor(s / 60);
@@ -492,6 +526,16 @@ function drawBackground() {
   }
   ctx.fillRect(0, 0, W, H);
 
+  const tcx = Math.floor(camX / TERRAIN_CELL) * TERRAIN_CELL;
+  const tcy = Math.floor(camY / TERRAIN_CELL) * TERRAIN_CELL;
+  for (let x = tcx; x < camX + W + TERRAIN_CELL; x += TERRAIN_CELL) {
+    for (let y = tcy; y < camY + H + TERRAIN_CELL; y += TERRAIN_CELL) {
+      const terrain = TERRAINS[getTerrainId(x + 1, y + 1)];
+      ctx.fillStyle = terrain.color;
+      ctx.fillRect(x - camX, y - camY, TERRAIN_CELL, TERRAIN_CELL);
+    }
+  }
+
   ctx.strokeStyle = gameState === 'reaper'
     ? 'rgba(100, 20, 20, 0.4)'
     : 'rgba(60, 40, 80, 0.4)';
@@ -538,6 +582,12 @@ function drawBackground() {
     ctx.fillText('[REAPER] ' + fmtTime(remaining) + ' remaining', W / 2, H - 60);
     ctx.textAlign = 'start';
   }
+
+  const terrain = TERRAINS[currentTerrainId];
+  ctx.fillStyle = terrain.damage > 0 ? '#fca5a5' : '#cbd5e1';
+  ctx.font = 'bold 13px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('Terrain: ' + terrain.name, 18, H - 28);
 }
 
 function drawPlayer() {
@@ -672,8 +722,12 @@ function gameLoop(timestamp) {
   // ── Update ──
   // Player movement
   const { dx, dy } = getMoveDir();
-  P.x += dx * P.speed * dt;
-  P.y += dy * P.speed * dt;
+  const terrain = getCurrentTerrain();
+  P.x += dx * P.speed * terrain.speed * dt;
+  P.y += dy * P.speed * terrain.speed * dt;
+  if (terrain.damage > 0) {
+    P.hp -= terrain.damage * dt;
+  }
   if (P.invTimer > 0) P.invTimer -= dt;
   P.orbitAngle += dt * 2.5;
 
