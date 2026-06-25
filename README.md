@@ -18,6 +18,13 @@ python3 -m http.server 8000
 - **WASD** / **Arrow Keys** — Move character
 - **Mouse** — (reserved for future targeting)
 
+## Weapon System
+
+- Start with **Magic Bolt**, a nearest-enemy projectile weapon.
+- Level-up choices can unlock **Knife** and **Orbit** weapons.
+- Active weapons can level up independently, improving cooldowns, volleys, pierce, or shard count.
+- General upgrades still improve movement, health, pickup radius, projectile speed, and all weapon damage.
+
 ## Project Structure
 
 ```
