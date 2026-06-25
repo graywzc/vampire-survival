@@ -33,6 +33,13 @@ python3 -m http.server 8000
 - **Wraiths** drift around the player approach vector.
 - **Brutes** alternate between slow movement and short charge bursts.
 
+## Terrain Variety
+
+- **Grave Soil** is the neutral baseline terrain.
+- **Old Road** and **Moss** give small movement boosts.
+- **Bog** slows player movement.
+- **Cursed Ground** slightly slows and damages the player over time.
+
 ## Project Structure
 
 ```
